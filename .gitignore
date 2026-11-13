@@ -1,0 +1,299 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pdm
+.pdm-python
+.pdm-build/
+
+# pixi
+.pixi
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
+.gigaide/
+
+# Abstra
+.abstra/
+
+# Visual Studio Code
+.vscode/
+
+# Ruff stuff:
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
+# Cursor
+.cursorignore
+.cursorindexingignore
+
+# Marimo
+marimo/_static/
+marimo/_lsp/
+__marimo__/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Other dirs and files
+.DS_Store
+Weights/
+Makefile
+
+# Models weights & serialized data extensions
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.h5
+*.keras
+*.pb
+*.tflite
+*.joblib
+*.pkl
+*.bin
+*.safetensors
+*.gguf
+*.npz
+*.mar
+*.mlmodel
+*.params
+*.model
+
+# Video extensions
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.flv
+*.wmv
+*.webm
+*.mpeg
+*.mpg
+*.m4v
+*.3gp
+*.ogv
+*.ts
+*.m2ts
+*.vob
+
+# Audio extensions
+*.mp3
+*.wav
+*.ogg
+*.flac
+*.aac
+*.m4a
+*.wma
+*.opus
+*.amr
+*.aiff
+*.mid
+*.midi
+*.au
+*.ac3
+
+# Image extensions
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.tif
+*.svg
+*.webp
+*.raw
+*.heif
+*.heic
+*.ico
+*.psd
+*.ai
+*.eps
+
+# Private runtime configuration
+.env
+.env.*
+!.env.example
+!.env.template
+settings.json
+settings.*.json
+!settings.example.json
+!settings.json.example
+settings_secret.json
+!settings_secret.example.json
+*.local.json
+*.local.yaml
+*.local.yml
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Private datasets, exports and encrypted production configuration
+*.log
+.tmplogs/
+logs/
+*.sqlite
+*.sqlite3
+*.dump
+*.json.enc
+**/caddy_data/
+**/certs/
+full_resume_*.json
+!examples/**
+
+# Publication boundary: local state and private data
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+.env
+.env.*
+!.env.example
+!.env.template
+settings.json
+settings.*.json
+!settings.example.json
+!settings.json.example
+config.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.enc
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.zip
+*.7z
+*.pcd
+*.bag
+*.onnx
+*.pt
+*.pth
+outputs/
+exports/
+logs/

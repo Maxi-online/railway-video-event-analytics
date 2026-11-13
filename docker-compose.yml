@@ -1,0 +1,36 @@
+services:
+  video_events-ai:
+    container_name: ai
+    build: .
+    volumes:
+    - ./Weights:/app/Weights
+    - ./Test_Videos:/app/Test_Videos
+    - ./images_temp:/app/images_temp
+    command:
+    - python
+    - main.py
+    environment:
+      YOLO_CONFIG_DIR: /app/config
+      YOLO_VERBOSE: 'False'
+      HYDRA_FULL_ERROR: '1'
+      TQDM_DISABLE: '1'
+      DISPLAY: host.docker.internal:0
+      QT_X11_NO_MITSHM: '1'
+      SERVICES_VIDEO_EVENTS_AI_COMMAND: ${SERVICES_VIDEO_EVENTS_AI_COMMAND-}
+      BACKEND_API_BASE_URL: ${BACKEND_API_BASE_URL-}
+      KAFKA_ADDRESS: ${KAFKA_ADDRESS-}
+      TOKEN: ${TOKEN-}
+      LOGIN: ${LOGIN-}
+      PASSWORD: ${PASSWORD-}
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities:
+            - gpu
+    ports:
+    - 8000:8000

@@ -1,0 +1,18 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# Стандартные параметры алгоритма трекинга BoT-SORT https://github.com/NirAharon/BoT-SORT
+
+tracker_type: botsort # tracker type, ['botsort', 'bytetrack']
+track_high_thresh: 0.5 # порог для первого срабатывания трекинга на объекте
+track_low_thresh: 0.1 # порог для второго срабатывания трекинга на объекте
+new_track_thresh: 0.6 # порог для инициализации нового трека, если обнаружение не совпадает ни с одним треком
+track_buffer: 30 # максимальная вместимость буффера трекинга, после переполнения трекинг будет частично очищаться
+match_thresh: 0.8 # порог для совпадения треков
+# min_box_area: 10  # пороговое значение для минимальных областей Bbox (для оценки трекера)
+# mot20: False  # метрика для оценки трекера
+
+# BoT-SORT настройки
+gmc_method: sparseOptFlow # способ компенсации глобального движения
+# Параметры ReID
+proximity_thresh: 0.5
+appearance_thresh: 0.25
+with_reid: False

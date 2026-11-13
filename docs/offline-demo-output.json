@@ -1,0 +1,11 @@
+{
+  "mode": "synthetic-feet-box-replay",
+  "frame_zone_states": [
+    false,
+    true,
+    true,
+    false
+  ],
+  "detector_inference_executed": false,
+  "weights_required_for_video_pipeline": true
+}
