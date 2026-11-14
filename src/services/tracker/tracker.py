@@ -18,21 +18,21 @@ from src.utils.geometry_utils import transform_mask_2_max_polygon
 
 class Tracker:
     def __init__(self, model):
-        # Определение модели
+        # Definition of the model
         self.model = model
 
-        # Инициализация времени появления кадра
+        # Initialization of the time of appearance
         self.new_frame_time = time()
         self.prev_frame_time = 0
 
-        # Инициализация истории трекинга
+        # Initialization of Tracking History
         self.track_history = defaultdict(lambda: [])
 
-        # Словарь для хранения времени последнего обновления каждого трека
+        # A dictionary to store the time of the last update of each track
         self.last_update_time = {}
 
-        # Параметр для определения, сколько времени трек может быть неактивным перед удалением
-        self.track_timeout = 120 # в секундах
+        # Parameter to determine how long a track may be inactive before removal
+        self.track_timeout = 120 # in seconds
 
     def predict_on_image_track(
         self,
@@ -44,37 +44,37 @@ class Tracker:
         tracker: str = "botsort.yaml",
     ) -> Dict:
         """
-        Функция выполняет обработку изображения с помощью модели YOLO и отслеживает движение объектов.
+        The function performs image processing using the YOLO model and monitors the movement of objects.
 
         Args:
-            img (np.ndarray): Изображение в формате np.ndarray для анализа.
-            iou (float): Порог для расчёта пересечения объектов (по умолчанию 0.5).
-            conf (float): Порог уверенности в детекции объекта (по умолчанию 0.5).
-            imgsz (int): Размер изображения для обработки (по умолчанию 640).
-            verbose (bool): Включение режима подробного вывода информации (по умолчанию False).
-            tracker (str): Используемая конфигурация трекера (по умолчанию "botsort.yaml").
+            img (np.ndarray): np.ndarray image for analysis.
+            iou (float): The threshold for calculating the intersection of objects ( default 0.5)).
+            conf (float): The threshold of confidence in an object's detective (default 0.5)).
+            imgsz (int): Image size for processing ( default 640)).
+            verbose (bool): Inclusion of detailed output mode (false default)).
+            tracker (str): Tracker configuration used ( default "botsort.yaml"").
 
         Returns:
-            Dict: Словарь с результатами обработки изображения.
+            Dict: A dictionary with image processing results.
         """
-        # ----- Pre-processing (CLAHE контраст) -----
+        # -----Pre-processing ----
         img_proc = preprocess_frame(img)
 
-        # ----- Inference & трекинг -----
+        # -----Inference & Track -----
         result = self.model.track(img_proc, iou=iou, conf=conf, imgsz=imgsz,
                                   verbose=verbose, tracker=tracker, persist=True)[0]
 
-        # Получение результатов детекции
+        # Getting the results of a detective
         cls = result.boxes.cls.cpu().numpy()
         self.class_names = result.names
         probs = result.boxes.conf.cpu().numpy()
-        # Координаты Bbox для трекинга возвращаем в виде [xc, yc, w, h] - координаты центра Bbox,
-        # его ширина и высота. Сделано для повышения точности расчета скорости перемещения объекта
+        # Bbox coordinates for tracking are returned as [xc, yc, w, h] - coordinates of the centre of Bbox,
+        # Its breadth and height. Done to improve the accuracy of the calculation of the speed of movement of the object
         boxes = result.boxes.xywh.int().cpu().numpy()
         boxes_xyxy = result.boxes.xyxy.cpu().numpy()
-        track_ids = []  # по умолчанию
+        track_ids = []  # default
 
-        # ----- Soft-NMS для устранения дублей без потери Recall -----
+        # ----- Soft-NMS to remove duplicates without losing Recall -----
         if len(boxes_xyxy) > 0:
             keep = soft_nms(boxes_xyxy.copy(), probs.copy(), cls.copy(), iou_thr=0.5, sigma=0.5)
             boxes = boxes[keep]
@@ -85,14 +85,14 @@ class Tracker:
                 track_ids = result.boxes.id.int().cpu().numpy()[keep]
             else:
                 track_ids = []
-        # если боксов нет — keep пропускаем
+        # If there's no boxing, we're missing the keep.
 
-        # Сохранение результатов
+        # Retaining results
         results = {'boxes': boxes, 'boxes_xyxy': boxes_xyxy, 'masks': [], 'cls': cls, 'probs': probs,
                    'track_ids': track_ids}
 
         try:
-            # Получение масок объектов
+            # Acquisition of object masks
             masks = result.masks.data.cpu().numpy()
             masks = np.moveaxis(masks, 0, -1)
             masks = scale_image(masks, result.orig_shape)
@@ -100,25 +100,25 @@ class Tracker:
             masks = [transform_mask_2_max_polygon(mask) for mask in masks]
             results['masks'] = masks
         except:
-            # Обработка случая, когда маски объектов недоступны
+            # Processing of cases where objects masks are not available
             results['masks'] = [None] * len(results['boxes'])
 
-        # Обновление временных меток для трекинга
+        # Updating time tags for tracking
         self.prev_frame_time = self.new_frame_time
         self.new_frame_time = time()
 
-        # Обновляем время последнего обновления для каждого трека
+        # Update the time of last update for each track
         current_time = time()
         for track_id in track_ids:
             self.last_update_time[track_id] = current_time
 
-        # Проверяем и удаляем устаревшие треки
+        # Check and remove obsolete tracks
         self.remove_stale_tracks()
 
         return results
 
     def remove_stale_tracks(self):
-        """Удаляет треки, которые не обновлялись в течение определенного времени."""
+        'Removes tracks that have not been updated for some time.'
         current_time = time()
         stale_tracks = []
         for track_id, last_update in self.last_update_time.items():
@@ -129,21 +129,21 @@ class Tracker:
             del self.last_update_time[track_id]
             if track_id in self.track_history:
                 del self.track_history[track_id]
-            # print(f"Трек с ID {track_id} был удален из-за отсутствия обновлений.")
+            # print(f"Track with ID {track_id} was removed due to lack of updates.")
 
     def set_track_timeout(self, timeout):
-        """Устанавливает время ожидания для удаления неактивных треков."""
+        'Sets waiting times to remove inactive tracks.'
         self.track_timeout = timeout
 
 
 class TrackerPJ(Tracker):
     def __init__(self, model):
         super().__init__(model)
-        # Инициализация словарей с результатами
+        # Initialization of dictionaries with results
         self.results_persons = dict()
         self.results_jackets = dict()
 
-        # Словарь для хранения данных пересечения ног человека и движущегося вагона
+        # Vocabulary to store data on the human foot and the moving wagon
         self.feet_wagon_intersections = {}
 
 
@@ -166,27 +166,27 @@ class TrackerPJ(Tracker):
         font: int = cv2.FONT_HERSHEY_SIMPLEX,
     ) -> np.ndarray:
         """
-        Функция выполняет обнаружение объектов на изображении и отслеживает их движение.
+        The function detects objects in the image and monitors their movement.
 
         Args:
-            img (np.ndarray): Входное изображение.
-            iou (float, optional): Порог перекрытия для подавления не максимумов. По умолчанию 0.5.
-            conf (float, optional): Порог уверенности для фильтрации предсказаний. По умолчанию 0.5.
-            imgsz (int, optional): Размер изображения для масштабирования. По умолчанию 640.
-            verbose (bool, optional): Флаг для вывода подробной информации. По умолчанию False.
-            tracker (str, optional): Путь к файлу конфигурации трекера. По умолчанию "botsort.yaml".
-            track_history_len (int, optional): Длина истории трека. По умолчанию 10.
-            velocity_ema_start (int, optional): Номер кадра, с которого начинается расчет скорости. По умолчанию 8.
-            velocity_ema_alpha (float, optional): Коэффициент сглаживания экспоненциального скользящего среднего для скорости. По умолчанию 0.9.
-            dir_ema_alpha (float, optional): Коэффициент сглаживания экспоненциального скользящего среднего для направления. По умолчанию 0.5.
-            show_velocity (bool, optional): Флаг для отображения скорости на изображении. По умолчанию False.
-            color_velocity (List, optional): Цвет для отображения скорости на изображении. По умолчанию (0, 171, 255).
-            thick_velocity (int, optional): Толщина линии для отображения скорости на изображении. По умолчанию 2.
-            fontscale_velocity (float, optional): Масштаб шрифта для отображения скорости на изображении. По умолчанию 1.2.
-            font (int, optional): Шрифт для отображения скорости на изображении. По умолчанию cv2.FONT_HERSHEY_SIMPLEX.
+            img (np.ndarray): Incoming image.
+            iou (float, optional): Cut-off threshold for suppression of not maximums. By default 0.5.
+            conf (float, optional): The confidence threshold to filter predictions. By default 0.5.
+            imgsz (int, optional): Image size for scaling. By default 640.
+            verbose (bool, optional): Flag to output detailed information. False default.
+            tracker (str, optional): Path to tracker configuration file. By default "botsort.yaml".
+            track_history_len (int, optional): The length of track history. By default 10.
+            velocity_ema_start (int, optional): The frame number from which the speed calculation begins. By default 8.
+            velocity_ema_alpha (float, optional): Coefficient of smoothing of exponentially sliding average for speed. By default 0.9.
+            dir_ema_alpha (float, optional): Coefficient of smoothing of exponentially sliding mean for direction. By default 0.5.
+            show_velocity (bool, optional): Flag to display speed in the image. False default.
+            color_velocity (List, optional): Color for image speed display. By default (0, 171, 255)).
+            thick_velocity (int, optional): The thickness of the speed line in the image. By default 2.
+            fontscale_velocity (float, optional): The size of the font to display the speed in the image. By default 1.2.
+            font (int, optional): Speed display font. By default cv2.FONT_HERSHEY_SIMPLEX.
 
         Returns:
-            img (np.ndarray): Изображение с отслеживаемыми объектами.
+            img (np.ndarray): Image with monitored objects.
         """
         results = super().predict_on_image_track(
             img, iou, conf, imgsz, verbose, tracker
@@ -228,11 +228,11 @@ class TrackerPJ(Tracker):
 class TrackerLWT(Tracker):
     def __init__(self, model):
         super().__init__(model)
-        # Инициализация словаря с результатами
+        # Initialization of the dictionary with results
         self.results = dict()
         self.velocity_ema_start = None
 
-        # Длина истории Track IDs
+        # Trick IDs history length
         self.track_history_len = None
 
 
@@ -256,28 +256,28 @@ class TrackerLWT(Tracker):
         font: int = cv2.FONT_HERSHEY_SIMPLEX,
 ) -> np.ndarray:
         """
-        Прогнозирует объекты на изображении и отслеживает их движение.
+        Project objects in the image and track their movement.
 
         Args:
-            img (np.ndarray): Входное изображение.
-            iou (float, optional): Порог перекрытия для подавления не максимумов. По умолчанию 0.5.
-            conf (float, optional): Порог уверенности для фильтрации предсказаний. По умолчанию 0.5.
-            imgsz (int, optional): Размер изображения для масштабирования. По умолчанию 640.
-            verbose (bool, optional): Флаг для вывода подробной информации. По умолчанию False.
-            tracker (str, optional): Путь к файлу конфигурации трекера. По умолчанию "botsort.yaml".
-            velocity_correction (dict, optional): Параметры коррекции скорости. По умолчанию {'enable': False}.
-            track_history_len (int, optional): Длина истории трека. По умолчанию 10.
-            velocity_ema_start (int, optional): Номер кадра, с которого начинается расчет скорости. По умолчанию 8.
-            velocity_ema_alpha (float, optional): Коэффициент сглаживания экспоненциального скользящего среднего для скорости. По умолчанию 0.9.
-            dir_ema_alpha (float, optional): Коэффициент сглаживания экспоненциального скользящего среднего для направления. По умолчанию 0.5.
-            show_velocity (bool, optional): Флаг для отображения скорости на изображении. По умолчанию False.
-            color_velocity (List, optional): Цвет для отображения скорости на изображении. По умолчанию (0, 171, 255).
-            thick_velocity (int, optional): Толщина линии для отображения скорости на изображении. По умолчанию 2.
-            fontscale_velocity (float, optional): Масштаб шрифта для отображения скорости на изображении. По умолчанию 1.2.
-            font (int, optional): Шрифт для отображения скорости на изображении. По умолчанию cv2.FONT_HERSHEY_SIMPLEX.
+            img (np.ndarray): Incoming image.
+            iou (float, optional): Cut-off threshold for suppression of not maximums. By default 0.5.
+            conf (float, optional): The confidence threshold to filter predictions. By default 0.5.
+            imgsz (int, optional): Image size for scaling. By default 640.
+            verbose (bool, optional): Flag to output detailed information. False default.
+            tracker (str, optional): Path to tracker configuration file. By default "botsort.yaml".
+            velocity_correction (dict, optional): Speed correction parameters. default {'enable': False}.
+            track_history_len (int, optional): The length of track history. By default 10.
+            velocity_ema_start (int, optional): The frame number from which the speed calculation begins. By default 8.
+            velocity_ema_alpha (float, optional): Coefficient of smoothing of exponentially sliding average for speed. By default 0.9.
+            dir_ema_alpha (float, optional): Coefficient of smoothing of exponentially sliding mean for direction. By default 0.5.
+            show_velocity (bool, optional): Flag to display speed in the image. False default.
+            color_velocity (List, optional): Color for image speed display. By default (0, 171, 255)).
+            thick_velocity (int, optional): The thickness of the speed line in the image. By default 2.
+            fontscale_velocity (float, optional): The size of the font to display the speed in the image. By default 1.2.
+            font (int, optional): Speed display font. By default cv2.FONT_HERSHEY_SIMPLEX.
 
         Returns:
-            img (np.ndarray): Изображение с отслеживаемыми объектами.
+            img (np.ndarray): Image with monitored objects.
         """
         if velocity_correction is None:
             velocity_correction = {'enable': False}

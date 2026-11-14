@@ -4,22 +4,22 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 
-# Игнорирование Warning Numpy
+# Ignoring Warning Numpy
 warnings.simplefilter('ignore', np.RankWarning)
 
 
 def plot_bbox(image: np.ndarray, bbox: List[float], color: Tuple[int], thickness: int=1) -> np.ndarray:
     """
-    Функция строит Bbox вокруг детектированного объекта на кадре.
+    The function builds Bbox around a detected object on a frame.
 
-    Входные параметры:
-        frame (np.ndarray): Кадр, на который будет нанесен BBox объекта,
-        bbox (np.ndarray): Координаты Bbox объекта в формате [x0, y0, x1, y1],
-        color (Tuple[int]): Цвет Bbox,
-        thickness (int): Толщина линии Bbox.
+    Input parameters:
+        frame (np.ndarray): The frame on which the BBox object will be delivered,
+        bbox (np.ndarray): Bbox coordinates in format [x0, y0, x1, y1],
+        color (Tuple[int]): Bbox color,
+        thickness (int): Bbox line thickness.
 
-    Выходные параметры:
-        image_bbox (np.ndarray): Изображение с нанесенным BBox объекта.
+    Output parameters:
+        image_bbox (np.ndarray): Image with BBox object.
     """
     image_bbox = cv2.rectangle(image, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),
                                color=color, thickness=thickness)   
@@ -28,15 +28,15 @@ def plot_bbox(image: np.ndarray, bbox: List[float], color: Tuple[int], thickness
 
 def plot_binary_mask(image: np.ndarray, mask: np.ndarray, color: Tuple[int], alpha: float=0.5) -> np.ndarray:
     """
-    Функция накладывает маску на исходное изображение и возвращает результат в виде np.ndarray.
+    The function puts the mask on the original image and returns the result as np.ndarray.
 
-    Входные параметры:
-        frame (np.ndarray): Кадр, на который будет нанесена маска,
-        mask (np.ndarray): Сегментационная маска,
-        color (Tuple[int]): Цвет маски,
-        alpha (float): Прозрачность цвета маски.
-    Выходные параметры:
-        image_combined (np.ndarray): Изображение с маской на объекте.
+    Input parameters:
+        frame (np.ndarray): The frame on which the mask will be applied,
+        mask (np.ndarray): Segmentation mask,
+        color (Tuple[int]): Mask colour,
+        alpha (float): The transparency of the mask colour.
+    Output parameters:
+        image_combined (np.ndarray): Image with mask on site.
     """
     if mask is not None:
         colored_mask = np.expand_dims(mask, 0).repeat(3, axis=0)
@@ -56,22 +56,22 @@ def plot_contour(
     thickness: int,
 ) -> np.ndarray:
     """
-    Функция накладывает контур маски на исходное изображение и возвращает результат в виде np.ndarray.
+    The function puts the mask contour on the original image and returns the result as np.ndarray.
     
     Args:
-        image (np.ndarray): Кадр, на который будет нанесен контур маски.
-        mask (np.ndarray): Сегментационная маска.
-        color (Tuple[int]): Цвет контура маски.
-        thickness (int): Толщина контура маски.
+        image (np.ndarray): The frame on which the mask will be drawn.
+        mask (np.ndarray): Segmentation mask.
+        color (Tuple[int]): Mask contour color.
+        thickness (int): Thickness of the outline of the mask.
 
     Returns:
-        frame (np.ndarray): Изображение с контуром маски на объекте.
+        frame (np.ndarray): Image with mask contour on object.
     """
 
     if mask.any():
         image_contour = cv2.drawContours(image, [mask], -1, color, thickness=thickness)
     else:
-        # Возврат исходного изображения, если маска отсутствует
+        # Return of the original image if no mask
         return image
 
     return image_contour
@@ -91,25 +91,25 @@ def plot_results(
     fontscale: float,
     is_tracking: bool = False,
 ) -> np.ndarray:
-    """Функция наносит Bboxes и Masks на кадр и возвращает результат в виде np.ndarray.
-    Поддерживает как обычную детекцию, так и трекинг, а также особый случай task="world".
+    """The function uses Bboxes and Masks to frame and returns the result as np.ndarray.
+    Supports both ordinary detective and tracking, as well as special case task="world".
 
     Args:
-        results (dict): Результаты предсказания модели.
-        class_names (dict): Словарь с названиями классов.
-        frame (np.ndarray): Кадр для визуализации.
-        task (str): Тип задачи ("PJ", "LWT", "R", "world").
-        font (int): Шрифт текста (cv2.FONT_...).
-        show_mask (bool): Рисовать маску или только контур.
-        show_class (bool): Показывать ли класс и вероятность.
-        colors_classes (dict): Цвета для классов.
-        thickness (int): Толщина линий.
-        alpha (float): Прозрачность маски (0-1).
-        fontscale (float): Масштаб текста.
-        is_tracking (bool): True, если results содержат данные трекинга (доп. поля).
+        results (dict): Model prediction results.
+        class_names (dict): A dictionary with class names.
+        frame (np.ndarray): Visualization frame.
+        task (str): Type of task ("PJ", "LWT", "R", "world").
+        font (int): Text font (cv2.FONT_...).
+        show_mask (bool): Draw the mask or only the contour.
+        show_class (bool): Show class and probability.
+        colors_classes (dict): Colors for classes.
+        thickness (int): Line thickness.
+        alpha (float): Transparent mask (0-1).
+        fontscale (float): Text size.
+        is_tracking (bool): True if results contain tracking data (addition fields)).
 
     Returns:
-        np.ndarray: Кадр с нарисованными BBoxes и Masks.
+        np.ndarray: A set of BBoxes and Masks.
     """
     for items in zip(*results.values()):
         if is_tracking:
@@ -119,20 +119,20 @@ def plot_results(
 
         label = class_names[int(cls)]
 
-        # Выбираем цвет в зависимости от задачи
+        # Select color according to task
         color_key = "foreign_objects" if task == "world" else label
         color = colors_classes[color_key]
 
-        # Отрисовка BBox или Mask/Contour
+        # BBox or Mask/Contour drawing
         if task == "PJ":
             frame = plot_bbox(frame, bbox, color=color, thickness=thickness)
-        elif task != "world" or is_tracking:  # Для "world" без трекинга маски не рисуются
+        elif task != "world" or is_tracking:  # For a "world" without a tracking masks don't draw
             if show_mask:
                 frame = plot_binary_mask(frame, mask, color=color, alpha=alpha)
             else:
                 frame = plot_contour(frame, mask, color=color, thickness=thickness)
 
-        # Отрисовка текста (класс + вероятность)
+        # Text drawing (class + probability)
         if show_class and (task != "world" or is_tracking):
             cv2.putText(
                 frame,
@@ -160,22 +160,22 @@ def plot_results_unet(
     font: int,
 ) -> np.ndarray:
     """
-    Функция для отрисовки контуров объектов на изображении.
+    A function for drawing the contours of objects in the image.
 
     Args:
-        results (dict): Содержит контуры ('contours'), ограничивающие рамки ('boxes') и ID классов ('cls'),
-        class_names (dict): Словарь с названиями классов объектов,
-        img (np.ndarray): Исходное изображение,
-        show_mask (bool): Если True, показывать цветную маску на изображении,
-        show_class (bool): Если True, отображать название класса на изображении,
-        color (Tuple[int]): Цвет контура объектов на изображении,
-        thickness (int): Толщина контура объектов на изображении,
-        fontscale (float): Масштаб контура объектов на изображении,
-        alpha (float): Прозрачность цветной маски,
-        font (int): Шрифт для отображения текста.
+        results (dict): Contains contours ('contours') limiting the scope ('boxes') and ID of classes ('cls')'),
+        class_names (dict): Vocabulary with object class names,
+        img (np.ndarray): Reference image,
+        show_mask (bool): If True, display the colour mask on the image,
+        show_class (bool): If True, display the class name on the image,
+        color (Tuple[int]): Color of the shape of objects in the image,
+        thickness (int): Thickness of the contour of objects in the image,
+        fontscale (float): The extent of the contour of objects in the image,
+        alpha (float): Transparent colour mask,
+        font (int): Text display font.
 
     Returns:
-        (np.ndarray): Изображение с нарисованными контурами и, возможно, классами объектов.
+        (np.ndarray): Image with sketches and possibly object classes.
     """
     if results['masks'] is not None:
         for contour in results['masks']:
@@ -184,7 +184,7 @@ def plot_results_unet(
                     img = plot_binary_mask(img, contour, color=color, alpha=alpha)
                 else:
                     img = cv2.drawContours(img, [contour], -1, color, thickness)
-                # Отрисовка названия класса
+                # Name of class
                 if show_class:
                     for contour, cls in zip(results['masks'],results['cls']):
                         label = class_names[int(cls)]
@@ -205,14 +205,14 @@ def plot_fps(
     color: Tuple[int],
     font,
 ):
-    """Функция наносит количество кадров в секунду (FPS) в левом верхнем углу кадра.
+    """The function gives the number of frames per second (FPS) at the top left corner of the frame.
 
     Args:
-        frame (np.ndarray): Исходное изображение.
-        frame_fps (float): Текущее количество кадров в секунду.
-        avg_fps (float): Среднее количество кадров в секунду.
-        color (Tuple[int]): Цвет отображения текста с FPS.
-        font: Шрифт текста.
+        frame (np.ndarray): Reference image.
+        frame_fps (float): Current number of frames per second.
+        avg_fps (float): Average number of frames per second.
+        color (Tuple[int]): FPS text display color.
+        font: Text font.
     """
     cv2.putText(frame, f"Frame FPS: {frame_fps:.1f}", (7, 70), fontFace=font,
                 fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
@@ -229,14 +229,14 @@ def plot_object_trajectory(
     color: Tuple[int],
     thickness: int,
 ):
-    """Функция наносит на кадр траекторию движения объекта.
+    """The function uses an object &apos; s trajectory on the frame.
 
     Args:
-        img (np.ndarray): Исходное изображение.
-        pt1 (Tuple[int]): Координаты точки начала траектории движения объекта.
-        pt2 (Tuple[int]): Координаты точки конца траектории движения объекта.
-        color (Tuple[int]): Цвет траектории движения объекта в формате BGR.
-        thickness (int): Толщина линии траектории движения объекта.
+        img (np.ndarray): Reference image.
+        pt1 (Tuple[int]): Co-ordinates of the starting point of the trajectory of the object.
+        pt2 (Tuple[int]): Coordinates of the end of the course of an object.
+        color (Tuple[int]): BGR track color.
+        thickness (int): Thickness of the trajectory line of an object.
     """
     cv2.line(img, pt1, pt2, color, thickness)
     return
@@ -248,22 +248,22 @@ def plot_danger_zone(
     color: Tuple[int],
     thickness: int
 ) -> np.ndarray:
-    """Функция наносит на кадр опасную зону (прямоугольник или полигон).
+    """The function is applied to the frame of a dangerous area (calibre or polygon)).
 
     Args:
-        img (np.ndarray): Исходное изображение.
-        danger_zone_cords (np.ndarray): Координаты опасной зоны.
-        color (Tuple[int]): Цвет опасной зоны.
-        thickness (int): Толщина линии фигуры опасной зоны.
+        img (np.ndarray): Reference image.
+        danger_zone_cords (np.ndarray): Coordinates of the dangerous area.
+        color (Tuple[int]): Color of the dangerous area.
+        thickness (int): Thickness of the line of the dangerous area figure.
 
     Returns:
-        img (np.ndarray): Кадр с опасной зоной.
+        img (np.ndarray): A frame with a dangerous area.
     """
-    # Если опасная зона - прямоугольник
+    # If a dangerous area is a rectangle
     if danger_zone_cords.ndim == 1:
         img = cv2.rectangle(img, (danger_zone_cords[0], danger_zone_cords[1]), (danger_zone_cords[2], danger_zone_cords[3]), color, thickness)
     else:
-        # Если опасная зона - полигон
+        # If the hazardous zone is a polygon
         img = cv2.polylines(img, [danger_zone_cords], True, color, thickness)
 
     return img
@@ -278,26 +278,26 @@ def plot_line_from_point(
     radius: int = 400,
 ) -> np.ndarray:
     """
-    Функция для рисования линии от заданной точки с заданным радиусом и углом относительно оси x.
+    A function to draw a line from a given point with a given radius and angle relative to the x axis.
 
     Args:
-        img (np.ndarray): Исходное изображение.
-        center_point (Tuple[int, int]): Начальная точка линии (x, y).
-        angle (float): Угол относительно оси x в градусах.
-        color (Tuple[int, int, int]): Цвет линии (BGR).
-        thickness (int): Толщина линии.
-        radius (int): Радиус линии.
+        img (np.ndarray): Reference image.
+        center_point (Tuple[int, int]): Initial point of the line (x, y)).
+        angle (float): An angle relative to the x axis in degrees.
+        color (Tuple[int, int, int]): Line color (BGR).
+        thickness (int): Line thickness.
+        radius (int): Line radius.
 
     Returns:
-        img (np.ndarray): Изображение с нарисованной линией.
+        img (np.ndarray): Image with line drawn.
     """
-    # Преобразование угла из градусов в радианы
+    # Conversion of angle from degrees to radians
     angle_rad = np.deg2rad(angle)
 
-    # Вычисление половины радиуса
+    # Calculation of half the radius
     half_radius = radius / 2
 
-    # Вычисление начальной и конечной точек линии с использованием половины радиуса и угла
+    # Calculation of the initial and final points of the line using half of the radius and angle
     start_point = (
         int(center_point[0] - half_radius * np.cos(angle_rad)),
         int(center_point[1] - half_radius * np.sin(angle_rad))
@@ -308,7 +308,7 @@ def plot_line_from_point(
         int(center_point[1] + half_radius * np.sin(angle_rad))
     )
 
-    # Ограничение координат начальной и конечной точек в пределах изображения
+    # Limiting the coordinates of the initial and final points within the image
     start_point = (
         np.clip(start_point[0], 0, img.shape[1] - 1),
         np.clip(start_point[1], 0, img.shape[0] - 1)
@@ -319,7 +319,7 @@ def plot_line_from_point(
         np.clip(end_point[1], 0, img.shape[0] - 1)
     )
 
-    # Рисование линии на изображении
+    # Drawing the line in the image
     img = cv2.line(img, start_point, end_point, color, thickness)
 
     return img
@@ -333,17 +333,17 @@ def plot_approximated_rail_line(
     thickness: int,
 ) -> np.ndarray:
     """
-    Рисует аппроксимированную линию рельса на изображении.
+    Draws an ancupunctured rail line on the image.
 
     Args:
-        img (np.ndarray): Исходное изображение.
-        x_range (np.ndarray): X-координаты линии.
-        y_range (np.ndarray): Y-координаты линии.
-        color (Tuple[int, int, int]): Цвет линии в BGR.
-        thickness (int): Толщина линии.
+        img (np.ndarray): Reference image.
+        x_range (np.ndarray): X-coordinates of the line.
+        y_range (np.ndarray): Y-coordinates of the line.
+        color (Tuple[int, int, int]): BGR line color.
+        thickness (int): Line thickness.
 
     Returns:
-        img (np.ndarray): Изображение с нарисованной линией.
+        img (np.ndarray): Image with line drawn.
     """
     if len(x_range) < 2 or len(y_range) < 2:
         return img

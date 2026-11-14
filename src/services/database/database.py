@@ -15,46 +15,46 @@ class DataBase:
                  task_7_enabled, task_8_1_1_enabled, task_9_enabled,
                  task_10_1_enabled, task_10_2_enabled
                  ):
-        # Токен для возможности записи событий в Backend API
+        # Token to record events in Backend API
         self.token = token
-        # Логин и пароль от аккаунта с ролью ai
+        # Login and password for the ai account
         self.login = login
         self.password = password
 
-        # Значение счетчиков срабатываний бизнес-логики,
-        # после которого информация о срабатывании будет записана в БД
+        # The importance of business logic counters,
+        # after which the activation information will be recorded in the database
         self.triggers_count = triggers_count
         self.triggers_count_task_4_2 = triggers_count_task_4_2
         self.triggers_count_task_5_2 = triggers_count_task_5_2
-        # Промежуток времени, в который проверяются срабатывания
-        # бизнес-логик, надо ли что-либо записывать в БД в секундах
+        # Time to be checked for response
+        # Business logic, do you need to record anything in the database in seconds
         self.check_db_time = db_check_time
-        # Время старта видео
+        # Video start time
         self.start_time = time()
-        # Словарь-счетчик срабатывания бизнес-логик задач
+        # Business logic task dictionary
         self.task_logic_trigger_count = {"1_2": 0, "1_3": 0, "3_1": 0,
                                          "3_3": 0, "4_2": 0, "5_2": 0,
                                          "6_1": 0, "6_2": 0, "7_1": 0, "7_2_1": 0,
                                          "7_2_2": 0, "8_1_1": 0, "9": 0,
                                          "10_1": 0, "10_2": 0,
                                          }
-        # Словарь, записывать ли ситуацию в БД, где ключ - номер task, значение - время
-        # срабатывания бизнес логики
+        # Vocabulary, do you want to record a situation in an database where the key is a task number, the value is time
+        # Business logic
         self.task_write_to_db = {"1_2": 0, "1_3": 0, "3_1": 0,
                                  "3_3": 0, "4_2": 0, "5_2": 0,
                                  "6_1": 0, "6_2": 0, "7_1": 0,
                                  "7_2_1": 0, "7_2_2": 0, "8_1_1": 0,
                                  "9": 0, "10_1": 0, "10_2": 0,
                                  }
-        # Словарь, в котором ключ - номер task, значение - np.ndarray изображения, на котором
-        # видно срабатывание бизнес-логики
+        # The dictionary in which the key is a task number, the value is np.ndarray of the image on which
+        # See how business logic works.
         self.task_snapshot_write_to_db = {"1_2": 0, "1_3": 0, "3_1": 0,
                                           "3_3": 0, "4_2": 0, "5_2": 0,
                                           "6_1": 0, "6_2": 0, "7_1": 0,
                                           "7_2_1": 0, "7_2_2": 0, "8_1_1": 0,
                                           "9": 0, "10_1": 0, "10_2": 0,
                                           }
-        # Словарь с категориями Alerts
+        # Alerts-category dictionary
         self.categories_ids = {"1_2": 1, "1_3": 2, "3_1": 1,
                                "3_3": 1, "4_2": 1, "5_2": 1,
                                "6_1": 1, "6_2": 2, "7_1": 2,
@@ -62,7 +62,7 @@ class DataBase:
                                "9": 2, "10_1": 2, "10_2": 2,
                                }
 
-        # Словарь с ID людей
+        # A dictionary with ID people
         self.people_ids = {"1_2": 0, "1_3": 0, "3_1": 0,
                            "3_3": 0, "4_2": 0, "5_2": 0,
                            "6_1": 0, "6_2": 0, "7_1": 0,
@@ -70,7 +70,7 @@ class DataBase:
                            "9": None, "10_1": 0, "10_2": 0,
                            }
 
-        # Инициализация параметров - включена ли запись бизнес-задачи
+        # Initialization of parameters - is the business task record included
         self.task_1_2_enabled = task_1_2_enabled
         self.task_1_3_enabled = task_1_3_enabled
         self.task_3_1_enabled = task_3_1_enabled
@@ -85,7 +85,7 @@ class DataBase:
         self.task_10_1_enabled = task_10_1_enabled
         self.task_10_2_enabled = task_10_2_enabled
 
-        # Предопределение времен срабатывания бизнес-логик
+        # Determination of business logic response times
         self.triggered_1_2 = self.triggered_time_1_2 = None
         self.triggered_1_3 = self.triggered_time_1_3 = None
         self.triggered_3_1 = self.triggered_time_3_1 = None
@@ -114,8 +114,8 @@ class DataBase:
         triggers_count: int,
         task_number: str
     ) -> Tuple:
-        """Вспомогательная функция для обработки сложного if statement при работе основной функции для обработки того,
-           сколько раз подряд сработала бизнес-логика определенной задачи"""
+        """Auxiliary function to process a complex if status when operating a core function to process that function,
+           How many times has the business logic of a given task worked in a row"""
         if task_trigger and task_logic_trigger_count[task_number] < triggers_count:
             task_logic_trigger_count[task_number] += 1
             if task_logic_trigger_count[task_number] == triggers_count:
@@ -138,27 +138,27 @@ class DataBase:
         triggers_count_task_5_2: int,
         task_number: str
     ) -> Tuple:
-        """Функция обрабатывает срабатывание логик бизнес-задач и записывает результаты обработки в словари для дальнейшего принятия
-        решения, записывать ли результаты в Базу Данных
+        """The function processes the logic processing of business tasks and records the processing results in dictionaries for further acceptance
+        Decisions on whether to record results in the Database
 
-        Входные параметры:
-            img (np.ndarray): Кадр, на который будут нанесены BBoxes и Masks.
-            task_trigger (bool): Значение True или False. Сработала логика бизнес-задачи на кадре видео или нет.
-            task_trigger_time (datetime): Время срабатывания триггера.
-            task_logic_trigger_count (dict): Словарь, хранящий в себе значения, сколько раз подряд сработала каждая бизнес-задача.
-            task_write_to_db (dict): Словарь, хранящий в себе значения, записывать ли в базу данных информацию по отработанной логике или нет.
-            task_snapshot_write_to_db (dict): Словарь, хранящий в себе snapshot каждой логики, если она отработала на кадре, иначе 0.
-            triggers_count (int): Значение счетчика срабатываний бизнес-логики, после которого информация о срабатывании будет записана в БД.
-            triggers_count_task_4_2 (int): Значение счетчика срабатываний бизнес-логики 4.2.
-            triggers_count_task_5_2 (int): Значение счетчика срабатываний бизнес-логики 5.2.
-            task_number (str): Номер бизнес-задачи по ПиМи.
+        Input parameters:
+            img (np.ndarray): The frame on which the BBoxes and Masks will be applied.
+            task_trigger (bool): Value of True or False. The logic of the business problem on the video shot worked or not.
+            task_trigger_time (datetime): Trigger response time.
+            task_logic_trigger_count (dict): a dictionary that keeps the meanings of how many times a business task has been performed in a row.
+            task_write_to_db (dict): a dictionary that keeps in itself values whether to record in the database information based on the logic or not.
+            task_snapshot_write_to_db (dict): The dictionary that keeps a snapshot of each logic if it worked on a frame, otherwise 0.
+            triggers_count (int): The value of the business logic computing calculator, after which the computing information will be recorded in the BD.
+            triggers_count_task_4_2 (int): Business logic counter value 4.2.
+            triggers_count_task_5_2 (int): Business logic counter value 5.2.
+            task_number (str): Business challenge number for PMI.
 
-        Выходные параметры:
-            task_logic_trigger_count (dict): Словарь с обновленными значениями.
-            task_write_to_db (dict): Словарь с обновленными значениями.
-            task_snapshot_write_to_db (dict): Словарь с обновленными значениями.
+        Output parameters:
+            task_logic_trigger_count (dict): up-to-date dictionary.
+            task_write_to_db (dict): up-to-date dictionary.
+            task_snapshot_write_to_db (dict): up-to-date dictionary.
         """
-        # Запись в базу данных задачи 4.2 осуществляется, если задача сработала хотя бы triggers_count_task_4_2 раз
+        # 4.2 is entered in the task database if the task has worked at least triggers_count_task_4_2 times
         if task_number == "4_2":
             self.proccess_if_statement(img, task_trigger, task_trigger_time, task_logic_trigger_count,
                                        task_write_to_db, task_snapshot_write_to_db, triggers_count_task_4_2, "4_2")
@@ -173,17 +173,17 @@ class DataBase:
 
 
     def update_task_1_2_dir(self, danger_zones_cords):
-        # Добавление категорий опасных зон в словарь categories_ids
+        # Addition of categories of hazardous areas to categories_ids dictionary
         self.categories_ids.update({"1_2_" + str(key): 1 for key, _ in danger_zones_cords.items()})
-        # Вспомогательный словарь с ID опасных зон для задачи 1.2
+        # Support dictionary with ID hazardous areas for the task 1.2
         zones_ids_1_2_dict = {"1_2_" + str(key): 0 for key, _ in danger_zones_cords.items()}
-        # Добавление в task_logic_trigger_count значения для каждой опасной зоны
+        # Addition to task_logic_trigger_count for each dangerous area
         self.task_logic_trigger_count.update(zones_ids_1_2_dict)
-        # Добавление в task_write_to_db значения для каждой опасной зоны
+        # Addition to task_write_to_db for each dangerous area
         self.task_write_to_db.update(zones_ids_1_2_dict)
-        # Добавление в task_snapshot_write_to_db значения для каждой опасной зоны
+        # Addition to task_snapshot_write_to_db for each dangerous area
         self.task_snapshot_write_to_db.update(zones_ids_1_2_dict)
-        # Добавление в словарь с ID людей значения для каждой опасной зоны
+        # Adding a value to a dictionary with ID for each dangerous area
         self.people_ids.update(zones_ids_1_2_dict)
 
 
@@ -383,36 +383,36 @@ class DataBase:
 
 
     def prepare_vals_for_insert(self, key, value, cam_id, convert_snap2bytes: bool = False):
-        # Обнуляем время срабатывания логики бизнес-задачи
+        # Fixing the business logic response time.
         self.task_write_to_db[key] = 0
 
-        # Ключ к ID человека и категории по названию задачи
+        # Key to human ID and mission category
         person_id_key = category_id_key = key
-        # Если в логике не было пересечения опасной зоны (не отработала задача 1.2)
+        # If the logic did not cross the dangerous area (the task 1.2 did not work))
         zone_id = None
-        # Если в названии задачи присутствует ID опасной зоны (задача 1.2)
+        # If an ID dangerous area is present in the task name (task 1.2))
         if key.startswith("1_2"):
-            # Разбивание названия задачи с ID опасной зоны на отдельные название и ID
+            # Battering the mission name from the ID of the dangerous area to a separate name and ID
             key = key.split("_")
-            # ID опасной зоны
+            # ID of the hazardous zone
             zone_id = int(key[-1])
-            # Номер задачи
+            # Task number
             key = '_'.join(key[:-1])
 
-        print(f"Запись логики {key} в БД, время: {value}")
-        # Логика записи лога в Базу Данных
-        # Параметры которые записываются в таблицу people
+        print(f"Logistics {key} In database, time: {value}")
+        # Log Log Log Log Log Log Logs at the Database
+        # Options that are recorded in the People table
         values_events = {"timestamp": value, "date_time": value, "cam_id": cam_id,
                          "zone_id": zone_id, "event": key.replace("_", "."),
                          "people_id": self.people_ids[person_id_key],
                          "category_id": self.categories_ids[category_id_key]}
 
-        # Параметры которые записываются в таблицу snapshots
+        # Options that are recorded in the snapshots table
         snapshot = self._jpegcompression(self.task_snapshot_write_to_db[person_id_key], 10, convert_snap2bytes)
         values_snapshots = {"timestamp": value, "snapshot": snapshot}
 
         return values_events, values_snapshots
 
     # ====================================================================================#
-    #                      Методы для интеграции Backend API                              #
+    # Methods for integration of Backend API                              #
     # ====================================================================================#
