@@ -6,11 +6,11 @@ Pipelline video analysts with stream reading, specification, tracking and subjec
 
 ### Code navigation
 
-- [main.py](main.py)
-- [src/services/inferencer/inferencer.py](src/services/inferencer/inferencer.py)
-- [src/services/tracker/tracker.py](src/services/tracker/tracker.py)
-- [src/services/danger_zones_reader.py](src/services/danger_zones_reader.py)
-- [src/config/config.yaml](src/config/config.yaml)
+- [main.py](../main.py)
+- [src/services/inferencer/inferencer.py](../src/services/inferencer/inferencer.py)
+- [src/services/tracker/tracker.py](../src/services/tracker/tracker.py)
+- [src/services/danger_zones_reader.py](../src/services/danger_zones_reader.py)
+- [src/config/config.yaml](../src/config/config.yaml)
 
 ### Reproduction and evaluation
 
@@ -168,6 +168,6 @@ To run, export the required variables to the process environment or fill the ign
 
 Hydra/OmegaConf reads secret fields from `src/config/config.yaml` via `${oc.env:NAME}`.
 
-The names of the private parameters are given in [.env.example](.env.example). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
+The names of the private parameters are given in [.env.example](../.env.example). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
 
 Checking the source and configuration formats does not replace the launch of the infrastructure and model evaluation. Privacy changes do not confirm the quality of AI, the performance of external APIs, or the willingness of the entire system to operate.
