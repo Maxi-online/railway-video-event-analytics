@@ -133,14 +133,14 @@ source .venv/bin/activate # Linux
 ```
 6. Set Dependency (torch + Torchvision + General)
 ```shell
-# Torch + Torchvision supported by CUDA (GPU)
+# Installation torch + torchvision Supported CUDA (GPU)
 pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu124
-# Installation of General Dependences (accurate after installation of Torch))
+# Establishment of general dependences (strictly after installation torch)
 pip install -r requirements.txt
 ```
 7. Start the project:
 ```shell
-# Start with default parameters (see spc/config/config.yaml))
+# default start-up (Look src/config/config.yaml)
 python main.py
 
 # Reset Start
@@ -156,8 +156,8 @@ Docker is required to install and deploy the project:
 P.P. 1-3 is similar to the installation (locally)). Look up: [instruction](#Installation-local)
 4. Start the project with a team:
 ```shell
-docker compose up -d --build # On first launch or if project code was updated
-docker compose up-d # On subsequent launches
+docker compose up -d --build # On first launch or if the project code has been updated
+docker compose up -d # On subsequent launches
 ```
 
 ## Private configuration
@@ -168,6 +168,6 @@ To run, export the required variables to the process environment or fill the ign
 
 Hydra/OmegaConf reads secret fields from `src/config/config.yaml` via `${oc.env:NAME}`.
 
-The names of the private parameters are given in [.env.example](.env.example)). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
+The names of the private parameters are given in [.env.example](.env.example). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
 
 Checking the source and configuration formats does not replace the launch of the infrastructure and model evaluation. Privacy changes do not confirm the quality of AI, the performance of external APIs, or the willingness of the entire system to operate.
