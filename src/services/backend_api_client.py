@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 
 class BackendAPIClient:
     def __init__(self, token, login, password, danger_zones_cords):
-        # Токен для возможности записи событий в Backend API
+        # Token to record events in Backend API
         self.token = token
-        # Логин и пароль от аккаунта с ролью ai
+        # Login and password for the ai account
         self.login = login
         self.password = password
         
-        # Координаты опасных зон
+        # Coordinates of hazardous areas
         self.danger_zones_cords = danger_zones_cords
-        self._zones_lock = threading.Lock()  # Lock для потокобезопасного доступа к координатам опасных зон
+        self._zones_lock = threading.Lock()  # Lock for traffic safety access to the coordinates of hazardous areas
 
     def _get_token(self, backend_api_base_url: str):
         login_url = backend_api_base_url + "/video_events/api/v1/auth/login"
@@ -29,12 +29,12 @@ class BackendAPIClient:
         try:
             response = requests.post(login_url, json=login_data).json()["token"]
         except Exception:
-            print("API недоступна. Не получилось обновить токен.")
+            print("API is not available. Couldn't update the current.")
             return None
         
         return response
 
-    # Функция для записи всех событий в Backend API в отдельном потоке
+    # A function to record all events in the Backend API in a separate stream
     def _create_events_and_send_snapshots(self,
                                           data_base,
                                           backend_api_base_url: str,
@@ -44,14 +44,14 @@ class BackendAPIClient:
             if value != 0:
                 values_events, values_snapshots = data_base.prepare_vals_for_insert(key, value, cam_id, False)
 
-                # Запись в Базу Данных
+                # Recording at the Database
                 del values_events["timestamp"]
                 del values_events["date_time"]
-                # Запись события через Backend API
+                # Recording an event via Backend API
                 event_id = self._create_event(backend_api_base_url, **values_events)
                 response = self._upload_snapshot(backend_api_base_url, event_id, values_snapshots["snapshot"])
                 if isinstance(response, str) and "error" in response:
-                    logger.info("API недоступна. Событие не записано в БД!")
+                    logger.info('API is not available. The event is not recorded in the database!')
 
     def create_events_and_send_snapshots(self,
                                          data_base,
@@ -83,7 +83,7 @@ class BackendAPIClient:
         try:
             response = requests.post(create_url, json=event_data)
             if response.status_code == 401:
-                logger.info("Токен устарел. Обновляю ...")
+                logger.info("Token is out of date. I'm updating it ...")
                 self.token = self._get_token(backend_api_base_url)
                 response = requests.post(create_url, headers={"Authorization": f"Bearer {self.token}"}, json=event_data)
             
@@ -102,39 +102,39 @@ class BackendAPIClient:
 
         files = {'file': ("image.jpg", file, 'image/jpeg')}
         
-        # Если запрос для создания события вернул ошибку API
+        # If the request to create an event returned an API error
         
         if isinstance(event_id, str) and "error" in event_id:
-            return "error: Ошибка получения данных из API"
+            return 'error: Error in getting data from the API'
         
         try:
             # response = requests.post(upload_snapshot_url, headers=headers, files=files)
             response = requests.post(upload_snapshot_url, files=files)
             logger.info(response)
         except Exception:
-            logger.info("API недоступна.")
+            logger.info('API is not available.')
             response = None
 
         if response is not None:
-            # Вывод кода статуса события
-            # Обновляем токен если он устарел
+            # Conclusion of event status code
+            # We'll update the current if it's obsolete.
             if response.status_code == 401:
-                logger.info("Токен устарел. Обновляю ...")
+                logger.info("Token is out of date. I'm updating it ...")
                 self.token = self._get_token(backend_api_base_url)
                 response = requests.post(upload_snapshot_url, headers=headers, files=files)
             if response.status_code == 200:
-                logger.info(f"Запись данных в таблицу events выполнена успешно!")
-                logger.info(f"Запись данных в таблицу snapshots выполнена успешно!")
+                logger.info(f"The data entry into the event table has been successful!")
+                logger.info(f"Snapshots are successfully recorded in the snapshots table!")
             else:
                 logger.info(response.content.decode('utf-8', errors='ignore'))
 
-            # Попытка распарсить JSON
+            # Trying to Unload JSON
             try:
                 return response.json()
             except ValueError:
                 return {"error": "Invalid JSON response", "content": response.content.decode('utf-8', errors='ignore')}
         else:
-            return "error: Ошибка получения данных из API"
+            return 'error: Error in getting data from the API'
 
     def read_zones_data(self, backend_api_base_url, cam_id):
         read_zones_url = backend_api_base_url + f"/video_events/api/v1/cameras/read_verbose?cam_slot={cam_id}"
@@ -146,19 +146,19 @@ class BackendAPIClient:
             response = requests.get(read_zones_url)
             logger.info(response)
         except:
-            logger.info("API недоступна.")
+            logger.info('API is not available.')
             response = None
 
         if response is not None:
-            # Обновляем токен если он устарел
+            # We'll update the current if it's obsolete.
             if response.status_code == 401:
-                logger.info("Токен устарел. Обновляю ...")
+                logger.info("Token is out of date. I'm updating it ...")
                 self.token = self._get_token(backend_api_base_url)
                 response = requests.get(read_zones_url, headers=headers)
             if response.status_code == 200:
-                logger.info("Координаты опасных зон успешно получены!")
+                logger.info('The coordinates of the hazardous areas have been successfully obtained!')
         else:
-            return "error: Ошибка получения данных из API"
+            return 'error: Error in getting data from the API'
 
         response = response.json()
 
@@ -167,17 +167,17 @@ class BackendAPIClient:
         else:
             zones = response.get('zones', None)
 
-        # Словарь в котором хранятся все зоны с координатами
+        # Vocabulary where all coordinates are stored
         zones_dict = {}
 
         if zones is not None: 
-            # Словарь в котором хранятся все зоны с координатами
+            # Vocabulary where all coordinates are stored
             for zone in zones:
                 zone_id, vertices = zone["zone_id"], zone["vertices"]
                 if zone_id not in zones_dict:
                     zones_dict[zone_id] = []
 
-                # Добавляем все координаты (точки) опасной зоны в словарь
+                # Add all the coordinates(s) of the dangerous area to the dictionary
                 for v in vertices:
                     point = list(v.values())
                     zones_dict[zone_id].append(point)
@@ -283,6 +283,6 @@ class BackendAPIClient:
             return False
 
     def get_danger_zones(self):
-        """Потокобезопасный метод для получения текущих опасных зон"""
+        'Flow-safe method for obtaining current hazardous areas'
         with self._zones_lock:
             return self.danger_zones_cords.copy() if self.danger_zones_cords else None

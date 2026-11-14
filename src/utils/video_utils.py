@@ -7,15 +7,15 @@ import cv2
 
 
 def save_video(output: str, video_name: str, cap: cv2.VideoCapture) -> cv2.VideoWriter:
-    """Создает директорию output, если она не существует, и возвращает объект VideoWriter.
+    """Creates an output directory if it doesn't exist and returns a VideoWriter object.
 
     Args:
-        output: Путь к директории, куда будет сохранено видео. Будет создана, если не существует.
-        video_name: Имя выходного файла видео.
-        cap: Объект VideoCapture, используемый для получения свойств видео (fps, разрешение и т.д.).
+        output: Path to the directory where the video will be saved. To be created if not in existence.
+        video_name: The name of the video output file.
+        cap: VideoCapture for video properties (fps, resolution, etc.).).
 
     Returns:
-        Настроенный объект VideoWriter, готовый к обработке видео.
+        VideoWriter, set up for video processing.
 """
 
     output_dir = Path(output)
@@ -39,13 +39,13 @@ def save_video(output: str, video_name: str, cap: cv2.VideoCapture) -> cv2.Video
 
 
 def calculate_average_fps(frame_history: Deque[Tuple[float, int]]) -> float:
-    """Вычисляет средний FPS на основе истории кадров.
+    """Calculates average FPS based on human history.
 
     Args:
-        frame_history (Deque[Tuple[float, int]]): История кадров.
+        frame_history (Deque[Tuple[float,int]]]: human history.
 
     Returns:
-        float: Средний FPS.
+        float: Medium FPS.
 
     """
     if len(frame_history) < 30:
@@ -65,12 +65,12 @@ def calculate_fps(
     prev_frame_time: float,
     frame_history: Deque[Tuple[float, int]],
 ) -> Tuple[float, float, float]:
-    """Функция рассчитывает количество кадров в секунду (FPS).
+    """The function calculates the number of people per second (FS).
 
     Args:
-        total_frames (int): Общее количество прочитанных кадров.
-        prev_frame_time (float): Время отображения предыдущего кадра.
-        frame_history (Deque[Tuple[float, int]]): История кадров.
+        total_frames (int): Total number of people read.
+        prev_frame_time (float): Presentation time of the previous frame.
+        frame_history (Deque[Tuple[float,int]]]: human history.
 
     Returns:
         Tuple[float, float, float]: (prev_frame_time, frame_fps, avg_fps).
@@ -79,10 +79,10 @@ def calculate_fps(
     elapsed_time = new_frame_time - prev_frame_time
     frame_fps = 1 / elapsed_time
 
-    # Обновляем историю кадров
+    # Update human resources history
     frame_history.append((new_frame_time, total_frames))
 
-    # Вычисляем средний FPS
+    # Compute average FPS
     avg_fps = calculate_average_fps(frame_history)
 
     return new_frame_time, frame_fps, avg_fps

@@ -5,7 +5,7 @@ from time import sleep
 
 from src import ThreadStopEventException
 
-# Инициализация логгера
+# Initialization of Logger
 logger = logging.getLogger(__name__)
 
 
@@ -19,12 +19,12 @@ class BaseFrameReader(ABC, Thread):
 
     @abstractmethod
     def _read_frame(self):
-        """Прочитать один кадр из источника."""
+        'Read one frame from the source.'
         pass
 
     @abstractmethod
     def _reconnect(self):
-        """Восстановить соединение с источником при необходимости."""
+        'Re-establish the connection to the source if necessary.'
         pass
 
     def run(self):
@@ -34,17 +34,17 @@ class BaseFrameReader(ABC, Thread):
                 if frame is not None and self.frame_queue.qsize() < self.frame_queue.maxsize:
                     self.frame_queue.put(frame, timeout=1.0)
 
-                    # Сброс счетчика ошибок
+                    # Removing the error calculator
                     if self.failures > 0:
                         self.failures = 0
-                        logger.info("Сброшен счетчик ошибок чтения кадров.")
+                        logger.info('Lost calculator of read errors.')
                         sleep(0.01)
 
                     self.total_read_frames += 1
             except Exception as e:
-                logger.error(f"Ошибка чтения кадра: {e}")
+                logger.error(f"Error in reading of the picture: {e}")
                 self.failures += 1
                 if self.failures > 5:
-                    logger.critical("Превышено количество ошибок чтения кадров. Остановка чтения.")
+                    logger.critical('The number of errors in reading. Stopping Reading.')
                     self.stop_event.set()
                     raise ThreadStopEventException()

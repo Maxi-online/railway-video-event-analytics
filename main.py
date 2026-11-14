@@ -32,19 +32,19 @@ from src.services.readers import KafkaFrameReader, CV2FrameReader
 from src.services.danger_zones_reader import DangerZonesReader
 from src import ThreadStopEventException
 
-# Определение логирования
+# Definition of logic
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-# Отключаем INFO логи от kafka-python
+# Disable INFO logs from kafka-python
 logging.getLogger('kafka').setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
             
 
 @hydra.main(version_base=None, config_path="src/config", config_name="config")
 def main(cfg: DictConfig) -> None:
-    # Путь до папки с моделями
+    # The Path to the Model Folder
     root_path = Path(__file__).parent
 
-    # Инициализация переменных которые могут вызвать ошибку программы если их не определить заранее
+    # Initializing variables that can cause a program error if they are not identified in advance
     person_ids_1_2 = None
     triggered_1_2_dict = None
     danger_zones_cords = None
@@ -61,14 +61,14 @@ def main(cfg: DictConfig) -> None:
     inferencer_WORLD = None
     deviant_history = None
 
-    # Настройки preview window
+    # Preview Windows settings
     if cfg.show_video_preview:
         preview_width, preview_height = cfg.preview_screen_size.width, cfg.preview_screen_size.height
-        # WINDOW_NORMAL позволяет изменять размер
+        # WINDOW_NORMAL allows for dimensional changes
         cv2.namedWindow(cfg.video_visual_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(cfg.video_visual_name, preview_width, preview_height)
 
-        # Перемещаем окно в центр экрана
+        # Move the window to the center of the screen
         screen_width = 1920
         screen_height = 1080
         pos_x = (screen_width - preview_width) // 2
@@ -76,12 +76,12 @@ def main(cfg: DictConfig) -> None:
         cv2.moveWindow(cfg.video_visual_name, pos_x, pos_y)
 
     # =================================================#
-    #              Запуск MJPEG-сервера                #
+    # Start MJPEG server #
     # =================================================#
     Thread(target=preview_server.run, daemon=True).start()
 
     # =================================================#
-    #            Загрузка моделей YOLOv8               #
+    # Uploading of YOLov8 models #
     # =================================================#
     try:
         if cfg.pj_enabled:
@@ -101,27 +101,27 @@ def main(cfg: DictConfig) -> None:
                 model_R = YOLO(root_path / cfg.model_r)
                 model_R.fuse()
     except:
-        raise ModuleNotFoundError("Не удалось загрузить одну из моделей!")
+        raise ModuleNotFoundError("Couldn't load one of the models!")
 
     # =================================================#
-    #              Обработка видеофайла                #
+    # Video file processing #
     # =================================================#
 
-    # Папка для хранения картинок для последующего вывода их на StreamAPI
+    # File to store images for later release on StreetAPI
     images_temp_path = root_path / "images_temp" / cfg.topic_name
     images_temp_path.mkdir(parents=True, exist_ok=True)
 
-    # Очередь для хранения кадров
+    # Storage line
     frame_queue = queue.Queue(maxsize=cfg.c)
     stop_event = threading.Event()
     skip_interval = 1
 
-    # Шрифт
+    # Font
     font = load_object(cfg.font)
-    # ID камеры
+    # ID Cameras
     cam_id = cfg.cam_id
     
-    # Запуск потока для чтения кадров из Broker
+    # Starting a stream to read from Broker
     if cfg.kafka_enabled:
         reader = KafkaFrameReader(
             cfg.kafka_address,
@@ -140,7 +140,7 @@ def main(cfg: DictConfig) -> None:
         )
     reader.start()
 
-    # Инициализация объекта База Данных
+    # Initialization of the database object
     data_base = DataBase(cfg.token, cfg.login, cfg.password, cfg.triggers_count,
                          cfg.triggers_count_task_4_2, cfg.triggers_count_task_5_2,
                          cfg.db_check_time, cfg.task_1_2_enabled, cfg.task_1_3_enabled,
@@ -150,10 +150,10 @@ def main(cfg: DictConfig) -> None:
                          cfg.task_10_1_enabled, cfg.task_10_2_enabled
                          )
 
-    # Инициализация объекта Backend API
+    # Initialization of the Backend API
     api_client = BackendAPIClient(cfg.token, cfg.login, cfg.password, danger_zones_cords)
 
-    # Запуск потока для чтения координат опасных зон отдельным потоком
+    # Starting the flux to read the coordinates of hazardous areas by separate stream
     danger_zones_reader = None
     if cfg.kafka_enabled:
         danger_zones_reader = DangerZonesReader(
@@ -167,13 +167,13 @@ def main(cfg: DictConfig) -> None:
         )
         danger_zones_reader.start()
 
-    # Объекты: Трекер, Инференсер
+    # Subjects: Tracker, Inferencer
     if cfg.pj_enabled:
         tracker_PJ = TrackerPJ(model_PJ)
     if cfg.lwt_enabled:
         tracker_LWT = TrackerLWT(model_LWT)
 
-    # Установка времени отслеживания (после пропавший трек удаляется)
+    # Installation of tracking time (after the missing track is removed))
     if cfg.pj_enabled:
         tracker_PJ.set_track_timeout(cfg.track_timeout)
     if cfg.lwt_enabled:
@@ -187,22 +187,22 @@ def main(cfg: DictConfig) -> None:
     if cfg.task_10_2_enabled:
         deviant_history = defaultdict(lambda: [])
 
-    # Переменные для кэширования результатов сегментации рельсов
+    # Changed to cache rail segmentation results
     rail_cache_frame_count = 0
 
-    # Время для отсчета интервала
+    # Time for interval reference
     timer_time = 0
 
-    # Переменные для расчета FPS и пропуска кадров
+    # Changed to calculate FPS and pass
     processed_frames = 0
     prev_frame_time = time()
     target_fps = cfg.target_fps
-    frame_history = deque(maxlen=30)  # Хранит историю за последние 30 кадров
+    frame_history = deque(maxlen=30)  # Keeps history from the last 30 shots.
     last_skip_update_time = prev_frame_time
     last_log_time = time()
 
     # ======================================================#
-    #            Чтение и пропуск кадров                    #
+    # Reading and missing personnel #
     # ======================================================#
     frame_count = 0
     try:
@@ -213,15 +213,15 @@ def main(cfg: DictConfig) -> None:
                 continue
 
             # ======================================================#
-            #                    Инференс моделей                   #
+            # Model inference #
             # ======================================================#
-            # Делаем копию изображения
+            # Make a copy of the image.
             prev_frame_time = time()
             annotated_frame = np.copy(frame)
-            # Сегментация rails
+            # Rails segmentation
             if cfg.r_enabled:
                 if cfg.rails_cache:
-                    # Обновление кэша сегментации рельсов
+                    # Updating the rail segmentation cache
                     if rail_cache is None or rail_cache_frame_count >= cfg.rail_cache_update_interval:
                         results_R, names_R = inferencer_R.predict_rails(frame, cfg.rails_unet, cfg.r_unet_params,
                                                                         cfg.rail_model_params)
@@ -235,15 +235,15 @@ def main(cfg: DictConfig) -> None:
                                                     cfg.rail_model_params)
 
             # ============================================#
-            #                    Трекинг                  #
+            # Treking                  #
             # ============================================#
-            # Люди + жилеты
+            # People + vests
             if cfg.pj_enabled:
                 annotated_frame = tracker_PJ.predict_on_image_track(
                     annotated_frame, **cfg.pj_model_params, **cfg.tracking_params,
                     **cfg.velocity_params, font=font)
 
-            # Вагоны
+            # Wagons
             if cfg.lwt_enabled:
                 annotated_frame = tracker_LWT.predict_on_image_track(
                     annotated_frame, **cfg.lwt_model_params, **cfg.tracking_params,
@@ -251,7 +251,7 @@ def main(cfg: DictConfig) -> None:
                     **cfg.velocity_params, font=font)
 
             # =================================================================#
-            #                      Визуализация результатов                    #
+            # Visualization of results #
             # =================================================================#
             # locomotive + wagon + tank
             if cfg.lwt_enabled:
@@ -273,9 +273,9 @@ def main(cfg: DictConfig) -> None:
                         )
 
             # ======================================================#
-            #                      Бизнес-задачи                    #
+            # Business agenda #
             # ======================================================#
-            # Бизнес Задача 1.2 Определение сотрудника в опасной зоне
+            # Business Task 1.2 Identification of a staff member in a hazardous area
             if cfg.task_1_2_enabled and cfg.db_enabled and api_client.danger_zones_cords is not None:
                 person_ids_1_2 = {}
                 triggered_1_2_dict = {}
@@ -284,19 +284,19 @@ def main(cfg: DictConfig) -> None:
                     annotated_frame = task_1_2(annotated_frame, tracker_PJ.results_persons,
                                                data_base, zone_id, font, zone_info, **cfg.task_1_2_params)
 
-                    # # Запись параметра для id человека с id опасной зоны для задачи 7_1
+                    # # Record option for id person from id dangerous area for task 7_1
                     person_ids_1_2[zone_id] = data_base.people_ids[f"1_2_{zone_id}"]
                     triggered_1_2_dict[zone_id] = data_base.triggered_1_2
 
-                    # Обновление значений в task_logic_trigger_count, task_write_to_db
+                    # Update of task_logic_trigger_count, task_write_to_db
                     data_base.process_1_2(annotated_frame, task_number=f"1_2_{zone_id}")
-            # Бизнес задача 1.3 Определение сотрудника без СИЗ
+            # Business task 1.3 Identification of staff member without PPE
             if cfg.pj_enabled:
                 if cfg.task_1_3_enabled:
                     annotated_frame = task_1_3(annotated_frame, tracker_PJ,
                                                data_base, font, **cfg.task_1_3_params)
                 elif cfg.show_pj:
-                    # Простое отображение результатов детекции человека и жилетов
+                    # A simple display of the results of a human and vest detective
                     annotated_frame = plot_results(
                         tracker_PJ.results_persons, tracker_PJ.class_names,
                         annotated_frame, 'PJ', font, is_tracking=True, **cfg.visualize_inference_params,
@@ -306,7 +306,7 @@ def main(cfg: DictConfig) -> None:
                         annotated_frame, 'PJ', font, is_tracking=True, **cfg.visualize_inference_params,
                     )
 
-            # Бизнес задача 3.1 Спрыгивание с подвижного состава, платформы
+            # Business task 3.1 jumping off rolling stock, platform
             if cfg.task_3_1_enabled:
                 annotated_frame = task_3_1(
                     annotated_frame,
@@ -319,7 +319,7 @@ def main(cfg: DictConfig) -> None:
                     **cfg.task_3_1_params,
                 )
 
-            # Бизнес задача 3.3 Проезд сотрудника на подножке, наружной лестнице цистерны, совмещенной с подножкой
+            # Business task 3.3 Travel of staff member on foot, outside staircase of tank reciprocally incorporated with step̆
             if cfg.task_3_3_enabled:
                 annotated_frame = task_3_3(
                     annotated_frame,
@@ -332,7 +332,7 @@ def main(cfg: DictConfig) -> None:
                     **cfg.task_3_3_params,
                 )
 
-            # Бизнес задача 4.2 Переход через железнодорожный путь перед движущимся подвижным составом
+            # Business task 4.2 Transition to moving rolling rolling stock
             if cfg.task_4_2_enabled:
                 annotated_frame = task_4_2(
                     annotated_frame,
@@ -343,7 +343,7 @@ def main(cfg: DictConfig) -> None:
                     font, cfg.move_velocity_lwt, **cfg.task_4_2_params,
                 )
 
-            # Бизнес задача 5.2 Переход пути вблизи стоящего состава на расстоянии менее 5 метров с головы или хвоста состава
+            # Business task 5.2 Passing the track near a standing convoy less than 5 metres from the head or tail of the convoy
             if cfg.task_5_2_enabled:
                 annotated_frame = task_5_2(
                     annotated_frame,
@@ -354,7 +354,7 @@ def main(cfg: DictConfig) -> None:
                     font, **cfg.task_5_2_params,
                 )
 
-            # Бизнес задача 6.1 Пролезание работников под стоящими вагонами
+            # Business task 6.1 Slapping workers under standing wagons
             if cfg.task_6_1_enabled:
                 annotated_frame = task_6_1(
                         annotated_frame,
@@ -366,8 +366,8 @@ def main(cfg: DictConfig) -> None:
                         **cfg.task_6_1_params,
                     )
 
-            # Бизнес задача 6.2 Залезание работников на автосцепки или под них
-            # Бизнес задача 8.1.1 Определение работников, сидящих в зоне наблюдения
+            # Business task 6.2 Intruding or Undercoming Workers
+            # Business task 8.1.1 Identification of employees sitting in the observation zone
             if cfg.task_6_2_enabled or cfg.task_8_1_1_enabled:
                 annotated_frame = task_6_2_and_8_1_1(
                     annotated_frame,
@@ -379,10 +379,10 @@ def main(cfg: DictConfig) -> None:
                     font=font,
                 )
 
-            # Бизнес задача 7:
-            # 7.1 Идентификация пересечений ЖД-путей в запрещенных зонах
-            # 7.2.1 Идентификация пересечений ЖД-путей по опасной траектории
-            # 7.2.2 Идентификация длительного нахождения на ЖД-путях без движения
+            # Business challenge 7:
+            # 7.1 Identification of intersections of W-tracks in prohibited areas
+            # 7.2.1 Identification of W-track intersections along a dangerous trajectory
+            # 7.2.2 Identification of long distance on the W-way without movement
             if cfg.task_7_enabled:
                 annotated_frame = task_7(
                     annotated_frame,
@@ -397,15 +397,15 @@ def main(cfg: DictConfig) -> None:
                     triggered_1_2_dict, person_ids_1_2,
                     **cfg.task_7_params)
 
-            # Бизнес задача 9 Обнаружение посторонних предметов
+            # Business objective 9 Detection of foreign items
             if cfg.task_9_enabled:
                 if time() - timer_time >= cfg.world_time_interval:
-                    # Обновление времени таймера
+                    # Update timer time
                     timer_time = time()
                     annotated_frame = task_9(annotated_frame, inferencer_WORLD, cfg.world_model_params, data_base,
                                              cfg.task_9_show, cfg.visualize_inference_params, font)
 
-            # Бизнес задача 10.1 Определение нехарактерного положения
+            # Business task 10.1 Definition of non-maintenance
             if cfg.task_10_1_enabled:
                 annotated_frame = task_10_1(
                     annotated_frame,
@@ -414,7 +414,7 @@ def main(cfg: DictConfig) -> None:
                     **cfg.task_10_1_params,
                     font=font)
 
-            # Бизнес задача 10.2 Определение нехарактерного поведения
+            # Business task 10.2 Definition of non-maintenance behaviour
             if cfg.task_10_2_enabled:
                 annotated_frame = task_10_2(
                     annotated_frame,
@@ -427,35 +427,35 @@ def main(cfg: DictConfig) -> None:
                     **cfg.task_10_2_params,
                     font=font)
 
-            # Передаём кадр в MJPEG-сервер
+            # We're gonna transfer the shot to the MJPEG server.
             preview_server.latest_frame = annotated_frame
 
-            # Расчет и отрисовка FPS
+            # FPS calculation and drawing
             new_frame_time, frame_fps, avg_fps = calculate_fps(
                 reader.total_read_frames, prev_frame_time,  frame_history
             )
             if cfg.show_fps:
                 plot_fps(annotated_frame, frame_fps, avg_fps, cfg.color_fps, font)
 
-            # Динамический пропуск кадров на основе frame_fps
+            # Dynamic frame_fps personnel pass
             if processed_frames > 5 and frame_fps > 0:
                 if frame_fps >= target_fps:
-                    reader.skip_interval = 1  # Не пропускаем кадры, если frame_fps уже достаточно высокий
+                    reader.skip_interval = 1  # Do not miss the footage if frame_fps is already high enough
                 else:
                     reader.skip_interval  = max(1, round(target_fps / frame_fps))
             else:
-                reader.skip_interval  = 1  # Защита от деления на ноль
+                reader.skip_interval  = 1  # Protection against division by zero
 
-            # Дополнительная корректировка на основе avg_fps (выполняется реже)
-            if new_frame_time - last_skip_update_time >= 1:  # Проверяем каждую секунду
+            # Additional adjustment based on avg_fps (implemented less frequently))
+            if new_frame_time - last_skip_update_time >= 1:  # Check every second.
                 if avg_fps > 0:
-                    if (frame_fps < target_fps * 0.9) and (avg_fps < target_fps * 0.9):  # Если avg_fps слишком низкий
-                        reader.skip_interval = min(reader.skip_interval + 1, 10)  # Увеличиваем интервал пропуска, но не более 10
-                    elif avg_fps > target_fps * 1.1:  # Если avg_fps слишком высокий
-                        reader.skip_interval = max(1, reader.skip_interval - 1)  # Уменьшаем интервал пропуска, но не меньше 1
+                    if (frame_fps < target_fps * 0.9) and (avg_fps < target_fps * 0.9):  # If avg_fps is too low
+                        reader.skip_interval = min(reader.skip_interval + 1, 10)  # Increase the pass interval, but not more than 10
+                    elif avg_fps > target_fps * 1.1:  # If avg_fps is too high
+                        reader.skip_interval = max(1, reader.skip_interval - 1)  # Reduce the pass interval, but not less than 1
                 last_skip_update_time = new_frame_time
             
-            # Корректировка времени отслеживания (после пропавший трек удаляется)
+            # Adjustment of tracking time (after the missing track is removed))
             if cfg.pj_enabled:
                 tracker_PJ.set_track_timeout(int(cfg.track_timeout / reader.skip_interval))
             if cfg.lwt_enabled:
@@ -463,7 +463,7 @@ def main(cfg: DictConfig) -> None:
 
             processed_frames += 1
 
-            # Логирование каждые 5 секунд
+            # Logging every 5 seconds
             if new_frame_time - last_log_time >= 5:
                 logger.info(f"Total frames read cam_id {cam_id}: {reader.total_read_frames}, "
                             f"Processed frames: {processed_frames}, "
@@ -472,60 +472,60 @@ def main(cfg: DictConfig) -> None:
 
                 last_log_time = new_frame_time
 
-            # Отображение кадра
+            # Image of frame
             if cfg.show_video_preview:
                 cv2.imshow(cfg.video_visual_name, annotated_frame)
                 key = cv2.waitKey(1)
-                # Выход по ESC или 'q'
+                # ESC or 'q' exit
                 if key == 27 or key == ord('q'):
                     break
                 sleep(0.01)
 
-                # Запись картинки в папку ./images_temp
+                # Record image in folder ./images_temp
                 if cfg.save_to_images_temp:
-                    # Сжатие картинки
+                    # Compressing the image
                     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
                     _, encimg = cv2.imencode('.jpg', annotated_frame, encode_param)
 
-                    # Сохранение кадра в папку ./images_temp
+                    # Save frame in folder ./images_temp
                     file_path = Path(images_temp_path) / f"frame{frame_count + 1}.jpg"
                     with file_path.open('wb') as f:
                         f.write(encimg.tobytes())
                 frame_count += 1
 
             # ======================================================================================#
-            #                      Логика обработки бизнес-задач для записи в БД                    #
+            # Logic of Business Tasks to Record in database                    #
             # ======================================================================================#
             if cfg.db_enabled:
                 data_base.process_business_tasks(annotated_frame)
 
-                # Проверка, есть ли результаты для записи в БД (раз в check_db_time)
+                # Check if results are available for recording in the database ( once in check_db_time))
                 if time() - data_base.start_time >= data_base.check_db_time:
-                    # Засекаем новый промежуток старта видео
+                    # We're picking up a new period of video launch.
                     data_base.start_time = time()
 
-                    # Запись всех событий в Backend API
+                    # Recording all events in Backend API
                     api_client.create_events_and_send_snapshots(data_base, cfg.backend_api_base_url, cam_id)
 
 
-        # Если поток закончился, перейти в режим ожидания
-        # print("Поток завершился. Ожидание нового видеопотока.")
-        sleep(1)  # Пауза перед повторной проверкой сообщений
+        # If the flow is over, go to waiting mode.
+        # print("The flows over. Waiting for a new video stream.")
+        sleep(1)  # Pause before rechecking messages
 
-    # Остановка основного потока если поток чтения координат опасных зон
-    # и поток чтения видео закончились
+    # Stopping the main stream when reading the coordinates of the hazardous areas
+    # and the video reading stream is over.
     except ThreadStopEventException:
-        logger.info("Остановка основного потока т.к. поток чтения координат опасных зон и потока чтения видео остановлены.")
+        logger.info('Stopping the main stream because the reading of the coordinates of the hazardous areas and the reading of the video are stopped.')
         raise Exception()
     except KeyboardInterrupt:
-        logger.info("Получен сигнал прерывания с клавиатуры. Остановка программы.")
+        logger.info('I got a break from the keyboard. Programme freeze.')
     finally:
-        # Лог для тестирования работы потоков
-        logger.info(f"Кол-во активных потоков: {threading.active_count()}")
-        # Очистка ресурсов
+        # A log to test flow performance
+        logger.info(f"Number of active flows: {threading.active_count()}")
+        # Cleaning of resources
         cv2.destroyAllWindows()
 
-        # Ожидание окончания работы потоков
+        # Waiting for the end of the flow
         stop_event.set()
         reader.join()
         if danger_zones_reader is not None:

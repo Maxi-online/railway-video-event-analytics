@@ -3,7 +3,7 @@ import numpy as np
 __all__ = ["soft_nms"]
 
 def _iou(box, boxes):
-    """IoU между box (4,) и boxes (N,4) (xyxy)"""
+    'Iou between box 4, and boxes (N.4) (xyxy)'
     x1 = np.maximum(box[0], boxes[:, 0])
     y1 = np.maximum(box[1], boxes[:, 1])
     x2 = np.minimum(box[2], boxes[:, 2])
@@ -20,7 +20,7 @@ def soft_nms(boxes: np.ndarray,
              iou_thr: float = 0.5,
              sigma: float = 0.5,
              score_thr: float = 0.001) -> np.ndarray:
-    """Soft-NMS в варианте Gaussian. Возвращает индексы оставшихся боксов.
+    """Soft-NMS in Gaussian. Returns the remaining boxing indices.
 
     boxes  – (N,4) xyxy,  scores – (N,), classes – (N,)
     """
@@ -34,7 +34,7 @@ def soft_nms(boxes: np.ndarray,
         cur_id = idxs[max_idx]
         keep.append(cur_id)
 
-        # убираем выбранный бокс из списка
+        # Remove selected boxing from the list
         boxes = np.delete(boxes, max_idx, 0)
         classes = np.delete(classes, max_idx, 0)
         scores = np.delete(scores, max_idx, 0)
@@ -48,7 +48,7 @@ def soft_nms(boxes: np.ndarray,
         decay = np.exp(-(ious ** 2) / sigma)
         scores[same_cls] = scores[same_cls] * decay[same_cls]
 
-        # отбрасываем слабые
+        # Throwing the Weak
         keep_mask = scores > score_thr
         boxes = boxes[keep_mask]
         classes = classes[keep_mask]

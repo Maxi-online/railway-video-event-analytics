@@ -6,7 +6,7 @@ import numpy as np
 import time
 import logging
 
-# Инициализация логгера
+# Initialization of Logger
 logger = logging.getLogger("KafkaFrameReader")
 
 
@@ -51,20 +51,20 @@ class KafkaFrameReader(BaseFrameReader):
         while attempt < max_attempts and not self.stop_event.is_set():
             try:
                 attempt += 1
-                logger.warning(f"Попытка переподключения {attempt}/{max_attempts}")
+                logger.warning(f"Reconnect attempt {attempt}/{max_attempts}")
 
                 if hasattr(self, 'consumer'):
                     self.consumer.close()
 
                 self.consumer = self._create_consumer()
-                logger.info("Переподключение успешно завершено")
+                logger.info('Reconnected successfully completed')
                 return
 
             except Exception as e:
-                logger.error(f"Переподключение не удалось: (попытка {attempt}): {str(e)}")
+                logger.error(f"Unable to reconnect: (attempted) {attempt}): {str(e)}")
                 if attempt < max_attempts:
                     time.sleep(2 ** attempt)
 
         if not self.stop_event.is_set():
-            logger.critical("Достигнут лимит попыток переподключения. Останавливаем поток.")
+            logger.critical('Reconnect attempt limit achieved. Stop the flow.')
             self.stop_event.set()

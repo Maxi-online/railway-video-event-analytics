@@ -1,5 +1,5 @@
-# Сторонние компоненты
+# Sliding components
 
-Полный перечень Python-зависимостей приведён в `requirements-checks.txt`, `requirements.txt`. Их лицензии и лицензии моделей сохраняются отдельно от авторского прикладного кода. Веса моделей и пользовательские данные в репозиторий не включены.
+The complete list of Python dependents is given in `requirements-checks.txt`, `requirements.txt`. Their licences and model licences are kept separate from the copyright application code. Model weights and user data are not included in the repository.
 
-Ultralytics 8.2.38 содержит [AGPL-3.0 LICENSE](https://github.com/ultralytics/ultralytics/blob/v8.2.38/LICENSE). Использование соответствующего inference-стека требует соблюдения условий этого компонента.
+Ultralytics 8.2.38 contains [AGPL-3.0 LICENSE](https://github.com/ultralytics/ultralytics/blob/v8.2.38/LICENSE)). The use of the appropriate interface requires compliance with the conditions of the component.

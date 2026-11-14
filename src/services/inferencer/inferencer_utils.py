@@ -4,23 +4,15 @@ import cv2
 
 
 def sigmoid(x):
+    """Apply the logistic sigmoid elementwise: 1 / (1 + exp(-x)).
+
+    Args:
+        x: A scalar or NumPy array of logits.
+
+    Returns:
+        A scalar or array of sigmoid values with the same shape as x.
     """
-    Функция сигмоид.
-
-    Эта функция принимает в качестве аргумента число или массив чисел и возвращает
-    результат применения сигмоидной функции. Сигмоидная функция описывается формулой:
-
-        S(x) = 1 / (1 + exp(-x))
-
-    где exp(-x) — это математическая константа e, возведенная в степень -x.
-
-    Параметры:
-        x (float или np.array): Входное значение или массив значений.
-
-    Возвращает:
-        float или np.array: Значение сигмоидной функции для каждого элемента входа.
-    """
-    return 1 / (1 + np.exp(-x))  # Возвращаем результат сигмоидной функции
+    return 1 / (1 + np.exp(-x))  # Return the sigmoid function result
 
 
 def create_binary_mask(
@@ -29,15 +21,15 @@ def create_binary_mask(
         threshold: float = 0.4,
 ) -> np.ndarray:
     """
-    Функция для бинаризации маски согласно порогу и изменения ее размера до desired_size.
+    Function to Binarize the mask according to the threshold and change its size to desired_size.
 
-    Входные параметры:
-        prob_mask (np.ndarray): Маска вероятности.
-        desired_size (Tuple[int, int]): Желаемый размер маски.
-        threshold (float): Порог для бинаризации маски.
+    Input parameters:
+        prob_mask (np.ndarray): Probability mask.
+        desired_size (Tuple[int, int]): The desired size of the mask.
+        threshold (float): The threshold for the binarization of the mask.
 
-    Выходные параметры:
-        (np.ndarray): Бинаризованная маска после изменения размера.
+    Output parameters:
+        (np.ndarray: Binarized mask after size change.
     """
     mask = (prob_mask > threshold).astype(np.uint8)
     mask = cv2.resize(mask, desired_size, interpolation=cv2.INTER_NEAREST)
