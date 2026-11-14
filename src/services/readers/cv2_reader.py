@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 import logging
 
-# Инициализация логгера
+# Initialization of Logger
 logger = logging.getLogger("CV2FrameReader")
 
 
@@ -13,14 +13,14 @@ class CV2FrameReader(BaseFrameReader):
         super().__init__(frame_queue, stop_event)
         self.file_path = file_path
 
-        # Проверка существования файла
+        # Checking the existence of the file
         self._check_filepath()
 
         self.skip_interval = skip_interval
         self.cap = cv2.VideoCapture(file_path)
 
     def _check_filepath(self):
-        msg = "Видеофайл не найден или не существует!"
+        msg = "The video isn't found or doesn't exist!"
         if not Path(self.file_path).exists():
             logger.error(msg)
             raise FileNotFoundError(msg)

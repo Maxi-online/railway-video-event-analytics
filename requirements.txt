@@ -2,7 +2,7 @@
 torch==2.13.0
 torchvision==0.20.1+cu124
 
-# Остальные пакеты
+# Other packages
 opencv-python>=4.9.0.80
 numpy>=1.26.4,<2.0.0
 matplotlib>=3.8.3

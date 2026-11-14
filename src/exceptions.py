@@ -1,3 +1,3 @@
 class ThreadStopEventException(Exception):
-    """Исключение возникает, когда stop_event потока становится set()."""
+    'The exception arises when stop_event flow becomes set().'
     pass

@@ -1,18 +1,18 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
-# Стандартные параметры алгоритма трекинга BoT-SORT https://github.com/NirAharon/BoT-SORT
+# Standard settings of the BoT-SORT https://github.com/NirAharon/BoT-SORT track algorithm
 
 tracker_type: botsort # tracker type, ['botsort', 'bytetrack']
-track_high_thresh: 0.5 # порог для первого срабатывания трекинга на объекте
-track_low_thresh: 0.1 # порог для второго срабатывания трекинга на объекте
-new_track_thresh: 0.6 # порог для инициализации нового трека, если обнаружение не совпадает ни с одним треком
-track_buffer: 30 # максимальная вместимость буффера трекинга, после переполнения трекинг будет частично очищаться
-match_thresh: 0.8 # порог для совпадения треков
-# min_box_area: 10  # пороговое значение для минимальных областей Bbox (для оценки трекера)
-# mot20: False  # метрика для оценки трекера
+track_high_thresh: 0.5 # threshold for first track operation at the site
+track_low_thresh: 0.1 # threshold for the second track operation at the site
+new_track_thresh: 0.6 # The threshold for the initialization of a new track if the discovery does not match any one track
+track_buffer: 30 # The maximum capacity of the tracking bee, once the track is over-filled, will be partially cleaned
+match_thresh: 0.8 # The threshold for track matches
+# min_box_area: 10 # threshold for minimum Bbox areas (for track evaluation))
+# mot20: False # tracker evaluation metric
 
-# BoT-SORT настройки
-gmc_method: sparseOptFlow # способ компенсации глобального движения
-# Параметры ReID
+# BoT-SORT settings
+gmc_method: sparseOptFlow # a way to compensate for global traffic
+# ReID Options
 proximity_thresh: 0.5
 appearance_thresh: 0.25
 with_reid: False

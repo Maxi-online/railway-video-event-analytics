@@ -49,22 +49,22 @@ class DangerZonesReader(Thread):
         while attempt < max_attempts and not self.stop_event.is_set():
             try:
                 attempt += 1
-                logger.warning(f"Попытка переподключения {attempt}/{max_attempts}")
+                logger.warning(f"Reconnect attempt {attempt}/{max_attempts}")
 
                 if hasattr(self, 'consumer'):
                     self.consumer.close()
 
                 self.consumer = self._create_consumer()
-                logger.info("Переподключение успешно завершено")
+                logger.info('Reconnected successfully completed')
                 return
 
             except Exception as e:
-                logger.error(f"Переподключение не удалось: (попытка {attempt}): {str(e)}")
+                logger.error(f"Unable to reconnect: (attempted) {attempt}): {str(e)}")
                 if attempt < max_attempts:
                     sleep(2 ** attempt)
 
         if not self.stop_event.is_set():
-            logger.critical("Достигнут лимит попыток переподключения. Останавливаем поток.")
+            logger.critical('Reconnect attempt limit achieved. Stop the flow.')
             self.stop_event.set()
 
 
@@ -72,7 +72,7 @@ class DangerZonesReader(Thread):
         try:
             return abs(float(delay))
         except (TypeError, ValueError):
-            logger.warning(f"Неверное значение задержки, используется значение по умолчанию: 0.1")
+            logger.warning(f"Error delay value, default value used: 0.1")
             return 0.1
 
 
@@ -87,12 +87,12 @@ class DangerZonesReader(Thread):
                     self.data_base.update_task_1_2_dir(zones)
                     return True
         except Exception as e:
-            logger.error(f"Ошибка обработки сообщения: {e}", exc_info=True)
+            logger.error(f"Error in communication processing: {e}", exc_info=True)
         return False
 
 
     def run(self):
-        logger.info(f"Запущен поток чтения опасных зон для камеры {self.cam_id}")
+        logger.info(f"The reading stream of the dangerous areas for the camera is started {self.cam_id}")
 
         while not self.stop_event.is_set():
             try:
@@ -110,7 +110,7 @@ class DangerZonesReader(Thread):
                     sleep(self.delay)
 
             except Exception as e:
-                logger.error(f"Ошибка чтения сообщений: {e}", exc_info=True)
+                logger.error(f"Error in reading messages: {e}", exc_info=True)
                 sleep(self.delay)
 
-        logger.info(f"Остановлен поток чтения опасных зон для камеры {self.cam_id}")
+        logger.info(f"The reading of dangerous areas for the camera has been stopped {self.cam_id}")
