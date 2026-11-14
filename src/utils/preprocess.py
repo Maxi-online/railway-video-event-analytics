@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
 
-# Переиспользуем один объект CLAHE на все кадры
+# Reuse one CLAHE object to all images
 _CLAHE = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
 def preprocess_frame(img: np.ndarray) -> np.ndarray:
-    """Усиливает контраст кадра CLAHE-алгоритмом.
-    Работает только для BGR-кадров (H×W×3). Если картинка
-    чёрно-белая или имеет другой формат, возвращается без изменений.
-    Без обучения повышает различимость мелких деталей и улучшает Recall.
+    """It increases the contrast with the CLAHE-algorithm.
+    Works for BGR only (H×W×3)). If image
+    black and white or in another format, returned unchanged.
+    Without learning, improves the visibility of small details and improves Recall.
     """
     if img.ndim == 3 and img.shape[2] == 3:
         lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
